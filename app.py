@@ -7,6 +7,10 @@ from flask_migrate import Migrate
 from sqlalchemy import desc
 from werkzeug.utils import secure_filename 
 import stripe
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
@@ -323,8 +327,7 @@ def remove_from_cart(item_id):
     return redirect(url_for('view_cart'))
 
 
-
-stripe.api_key = 'sk_test_51QNIiNJpDCQSOQy2982rr0qs0Hz4MSxj5RSBtGI2TQhzYw8mbNp6M8f7LR5OXXBYXAD3kkFqgLkzAPQ3g6Mg1V7I00RreJuna1'  # Replace with your secret key
+stripe.api_key = os.getenv('STRIPE_API_KEY') 
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
