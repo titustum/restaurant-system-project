@@ -1,0 +1,52 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block admin_content %}
+<div class="border border-gray-300 p-6 bg-white shadow-md rounded-lg ">
+    <h1 class="text-3xl font-semibold text-center mb-6 text-gray-800">Add Category</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-4">
+        <ul>
+            {% for category, message in messages %}
+            <li class="alert p-4 rounded {{ 'bg-green-500' if category == 'success' else 'bg-red-500' }} text-white">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_category') }}" enctype="multipart/form-data">
+        <!-- Category Name -->
+        <div class="mb-4">
+            <label for="name" class="block text-lg font-medium text-gray-700">Category Name</label>
+            <input type="text" id="name" name="name"
+                class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required>
+        </div>
+
+        <!-- Category Image -->
+        <div class="mb-4">
+            <label for="image" class="block text-lg font-medium text-gray-700">Category Image</label>
+            <input type="file" id="image" name="image"
+                class="w-full px-4 py-2 mt-1 text-sm text-gray-700 border border-gray-300 rounded-lg file:border-0 file:text-blue-700 file:bg-blue-100 file:px-4 file:py-2 file:rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mb-4 text-center">
+            <button type="submit"
+                class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Add Category
+            </button>
+        </div>
+    </form>
+
+    <!-- Back to Home Link -->
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('index') }}" class="text-blue-500 hover:underline">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

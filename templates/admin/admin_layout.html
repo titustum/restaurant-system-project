@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <!-- Side navigation -->
+    <aside class="hidden lg:block shrink-0 w-auto bg-white shadow-lg md:min-h-screen p-4">
+        <div class="flex items-center mb-8">
+            <div class="bg-orange-500 text-white p-2 rounded-lg mr-2">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-800">Dine<span class="text-orange-500">(VI)</span></h1>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-gray-500 text-sm font-medium mb-4">MENU CATEGORIES</h2>
+            <ul class="space-y-4">
+                <a href="{{ url_for('admin_dashboard') }}"
+                    class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-hamburger mr-3"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('view_categories') }}"
+                    class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-utensils mr-3"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="{{ url_for('view_menu_items') }}"
+                    class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-utensils mr-3"></i>
+                    <span>Menu Items</span>
+                </a>
+                <a href="#" class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-users mr-3"></i>
+                    <span>Users</span>
+                </a>
+                <a href="#" class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-box mr-3"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#" class="flex space-x-2 items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-credit-card mr-3"></i>
+                    <span>Payments</span>
+                </a>
+
+                <!-- Add more sections as required -->
+            </ul>
+        </div>
+
+        <div class="pt-4 border-t border-gray-200">
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                <img src="https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg" alt="User Profile"
+                    class="w-10 h-10 rounded-full mr-3" />
+                <div>
+                    <h3 class="font-medium text-gray-800">John Doe</h3>
+                    <p class="text-sm text-gray-500">Profile</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow h-screen flex-1 flex flex-col bg-white p-4">
+        <nav class="flex space-x-4 items-center justify-between mb-6 p-2">
+            <div class="flex items-center lg:hidden">
+                <button class="bg-orange-500 cursor-pointer text-white py-2 rounded-lg px-3">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="relative flex-1 max-w-md">
+                <input type="text" placeholder="Search for food, drinks, etc."
+                    class="w-full p-2 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-bell text-xl"></i>
+                </button>
+                <div class="relative">
+                    <button class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                    </button>
+                    <span
+                        class="absolute top-[-8px] right-[-8px] bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium">3</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Dashboard Cards Section -->
+
+        {% block admin_content %}{% endblock %}
+
+
+    </main>
+</div>
+{% endblock %}
