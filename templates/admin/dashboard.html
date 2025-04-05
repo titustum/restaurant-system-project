@@ -65,6 +65,7 @@
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Item Name</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Category</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Price</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,6 +74,13 @@
                     <td class="px-6 py-3 text-sm text-gray-800">{{ item.name }}</td>
                     <td class="px-6 py-3 text-sm text-gray-600">{{ item.category.name }}</td>
                     <td class="px-6 py-3 text-sm text-gray-600">${{ item.price }}</td>
+                    <td class="px-6 py-3 text-sm text-gray-600">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to remove this item?');"
+                            action="{{ url_for('remove_menu_item', item_id=item.item_id) }}"
+                            class="text-red-600 hover:underline ml-2 hover:text-red-800">
+                            <button type="submit"> Remove</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

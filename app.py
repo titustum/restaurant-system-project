@@ -4,9 +4,8 @@ from flask import Flask, jsonify, render_template, request, redirect, session, u
 from flask_sqlalchemy import SQLAlchemy
 # from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from werkzeug.utils import secure_filename
-
-from admin import admin_bp
+from sqlalchemy import desc
+from werkzeug.utils import secure_filename 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
@@ -115,7 +114,15 @@ def category_items(category_id):
     menu_items = MenuItem.query.filter_by(category_id=category_id).all()
     for item in menu_items:
         item.random_rating = round(uniform(3, 5), 1)
-    return render_template('categorized_items.html', menu_items=menu_items, category=category, categories=categories)
+    return render_template('categorized_items.html', menu_items=menu_items, category=category.name, categories=categories)
+
+# Search items
+@app.route('/search' , methods=['GET'])  
+def search_items():
+    search_term = request.args.get('search', '').lower()
+    categories = Category.query.all()  
+    menu_items = MenuItem.query.filter(MenuItem.name.ilike(f'%{search_term}%')).all()
+    return render_template('categorized_items.html', menu_items=menu_items, category="Searched", categories=categories)
 
 
 # Home Route
@@ -137,7 +144,7 @@ def admin_dashboard():
     total_payments = Payment.query.count()
 
     # Get the most recent menu items added (e.g., last 5 items)
-    recent_items = MenuItem.query.order_by(MenuItem.item_id).limit(5).all()
+    recent_items = MenuItem.query.order_by(desc(MenuItem.item_id)).limit(5).all()
 
     return render_template('admin/dashboard.html', 
                            total_categories=total_categories, 
@@ -207,6 +214,39 @@ def add_menu_item():
 
     return render_template('admin/add_menu_item.html', categories=categories)
 
+
+@app.route('/remove/item/<int:item_id>', methods=['POST'])
+def remove_menu_item(item_id):
+    # Find the menu item by item_id
+    item_to_remove = MenuItem.query.get(item_id) 
+    if item_to_remove: 
+        db.session.delete(item_to_remove)
+        db.session.commit() 
+        flash('Menu item removed successfully!', 'success')
+    else:
+        # Item not found, flash a failure message
+        flash('Menu item not found!', 'danger') 
+    return redirect(url_for('view_menu_items')) 
+
+
+@app.route('/edit/item/<int:item_id>', methods=['GET', 'POST'])
+def edit_menu_item(item_id): 
+    item = MenuItem.query.get(item_id) 
+    if item is None:
+        flash('Menu item not found!', 'danger')
+        return redirect(url_for('view_menu_items'))  # Redirect to the menu view if the item doesn't exist
+    
+    if request.method == 'POST':
+        # Update the item with the new values from the form
+        item.name = request.form['name']
+        item.description = request.form['description']
+        item.price = request.form['price']
+        item.category_id = request.form['category_id'] 
+        db.session.commit()
+
+        flash('Menu item updated successfully!', 'success')
+        return redirect(url_for('view_menu_items'))   
+    return render_template('admin/edit_menu_item.html', item=item)
 
 
 @app.route('/view/items', methods=['GET', 'POST'])
