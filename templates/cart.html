@@ -3,7 +3,7 @@
 {% block guest_content %}
 
 <!-- Recently Added Items Section -->
-<div class="mt-8">
+<div class="my-8">
     <div class="flex justify-between items-center py-4">
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Menu Items</h2>
     </div>
@@ -58,19 +58,152 @@
             <span class="font-bold text-gray-800">${{ "%.2f"|format(total_price) }}</span>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row justify-between sm:justify-end space-y-4 sm:space-y-0 mt-4">
-            <a href="{{ url_for('index') }}"
-                class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto text-center">
-                Continue Shopping
-            </a>
-            <a href="{{ url_for('checkout') }}"
-                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 w-full sm:w-auto text-center">
-                Proceed to Checkout
-            </a>
-        </div>
+    </div>
+
+
+    <!-- Customer Information Section -->
+    <!-- <div class="bg-white p-4 rounded-lg shadow-md mt-6 border border-gray-300">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
+
+        <form method="POST" action="#">
+            <div class="mb-4 sm:flex sm:space-x-4">
+                
+                <div class="sm:w-1/2">
+                    <label for="name" class="block text-gray-700 font-medium">Your Name</label>
+                    <input type="text" name="name" id="name" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+              
+                <div class="sm:w-1/2">
+                    <label for="email" class="block text-gray-700 font-medium">Email Address</label>
+                    <input type="email" name="email" id="email" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="mb-4 sm:flex sm:space-x-4">
+                 
+                <div class="sm:w-1/2">
+                    <label for="table_number" class="block text-gray-700 font-medium">Table Number</label>
+                    <input type="text" name="table_number" id="table_number" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="sm:w-1/2">
+                    <label for="card_number" class="block text-gray-700 font-medium">Card Number</label>
+                    <input type="text" name="card_number" id="card_number" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+             
+            <div class="mb-4 sm:flex sm:space-x-4">
+                <div class="sm:w-1/2">
+                    <label for="expiry_date" class="block text-gray-700 font-medium">Expiry Date</label>
+                    <input type="month" name="expiry_date" id="expiry_date" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                 
+                <div class="sm:w-1/2">
+                    <label for="cvv" class="block text-gray-700 font-medium">CVV</label>
+                    <input type="text" name="cvv" id="cvv" required
+                        class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            
+            <div class="mt-4">
+                <button type="submit"
+                    class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Place Order
+                </button>
+            </div>
+        </form>
+    </div> -->
+
+
+
+    <!-- Order Summary Section -->
+    <!-- Stripe Checkout Form in your cart page -->
+    <div class="bg-white p-4 rounded-lg shadow-md mt-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
+
+        <form id="payment-form" method="POST" action="{{ url_for('place_order') }}">
+            <!-- Name Input -->
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 font-medium">Full Name</label>
+                <input type="text" name="name" id="name" required
+                    class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Card Details -->
+            <div class="mb-4">
+                <label for="card-element" class="block text-gray-700 font-medium">Credit Card</label>
+                <div id="card-element" class="StripeElement">
+                    <!-- A Stripe Element will be inserted here. -->
+                </div>
+                <div id="card-errors" role="alert"></div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-4">
+                <button id="submit"
+                    class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Place Order
+                </button>
+            </div>
+        </form>
     </div>
 
 </div>
+
+<!-- Include Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<script type="text/javascript">
+    // Create a Stripe client
+    var stripe = Stripe('pk_test_yourPublishableKey'); // Replace with your Stripe publishable key
+
+    // Create an instance of Elements
+    var elements = stripe.elements();
+
+    // Create a card element
+    var card = elements.create('card');
+
+    // Add the card element to the DOM
+    card.mount('#card-element');
+
+    // Handle form submission
+    var form = document.getElementById('payment-form');
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        stripe.createToken(card).then(function (result) {
+            if (result.error) {
+                // Inform the user if there was an error
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+            } else {
+                // Send the token to your server for processing
+                stripeTokenHandler(result.token);
+            }
+        });
+    });
+
+    function stripeTokenHandler(token) {
+        // Insert the token into the form so it gets submitted to the server
+        var form = document.getElementById('payment-form');
+        var hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeToken');
+        hiddenInput.setAttribute('value', token.id);
+        form.appendChild(hiddenInput);
+
+        // Submit the form
+        form.submit();
+    }
+</script>
+
+
 
 {% endblock %}
