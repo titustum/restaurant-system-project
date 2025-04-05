@@ -231,6 +231,7 @@ def remove_menu_item(item_id):
 
 @app.route('/edit/item/<int:item_id>', methods=['GET', 'POST'])
 def edit_menu_item(item_id): 
+    categories = Category.query.all()
     item = MenuItem.query.get(item_id) 
     if item is None:
         flash('Menu item not found!', 'danger')
@@ -246,13 +247,18 @@ def edit_menu_item(item_id):
 
         flash('Menu item updated successfully!', 'success')
         return redirect(url_for('view_menu_items'))   
-    return render_template('admin/edit_menu_item.html', item=item)
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
 
 
 @app.route('/view/items', methods=['GET', 'POST'])
 def view_menu_items():
     menu_items = MenuItem.query.order_by(MenuItem.item_id).limit(20).all()
     return render_template("admin/menu_items.html", menu_items=menu_items)
+
+@app.route('/categories', methods=['GET'])
+def side_categories():
+    categories = Category.query.all()
+    return render_template("categories.html",categories=categories)
 
 
 @app.route('/view/categories', methods=['GET', 'POST'])
