@@ -2,4 +2,6 @@ venv/
 .env
 .rest
 __pycache__/
+*.py[cod]
 *.pyc 
+node_modules/

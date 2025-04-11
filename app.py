@@ -1,8 +1,9 @@
+from functools import wraps
 import os
 from random import uniform
 from flask import Flask, jsonify, render_template, request, redirect, session, url_for, flash, Blueprint
 from flask_sqlalchemy import SQLAlchemy
-# from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from sqlalchemy import desc
 from werkzeug.utils import secure_filename 
@@ -29,78 +30,7 @@ migrate = Migrate(app, db)
 
 # Database Models
 
-# Users Model (Admins, Waiters, etc.)
-class User(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    full_name = db.Column(db.String(100), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(100))
-    phone_number = db.Column(db.String(15))
-
-# Category Model
-class Category(db.Model):
-    category_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    image_url = db.Column(db.String(255))  # Add image column  
-
-    # Explicit relationship to MenuItem with back_populates
-    menu_items = db.relationship('MenuItem', back_populates='category', lazy=True)
-
-    def __repr__(self):
-        return f"<Category {self.name}>"
-
-# Menu Items Model 
-class MenuItem(db.Model):
-    item_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(255)) 
-    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
-
-    # Explicit relationship to Category with back_populates
-    category = db.relationship('Category', back_populates='menu_items', lazy=True)
-
-    def __repr__(self):
-        return f"<MenuItem {self.name}>"
-
-
-# Orders Model
-class Order(db.Model):
-    order_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    table_number = db.Column(db.Integer, nullable=False)
-    order_status = db.Column(db.String(20), default='Pending')
-    total_price = db.Column(db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-
-    def __repr__(self):
-        return f"<Order {self.name}>"
-
-# Order Items Model (for individual items in orders)
-class OrderItem(db.Model):
-    order_item_id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
-    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_item.item_id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-
-    def __repr__(self):
-        return f"<OrderItem {self.name}>"
-
-# Payment Model
-class Payment(db.Model):
-    payment_id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    payment_method = db.Column(db.String(20), nullable=False)
-    payment_status = db.Column(db.String(20), default='Pending')
-    
-    def __repr__(self):
-        return f"<Payment {self.name}>"
+from models.models import Category, MenuItem, Order, OrderItem, User, Payment
 
 # Home Route
 @app.route('/')
@@ -137,10 +67,21 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-
 # admin routes
 
+@wraps
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('You need to log in first.', 'danger')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
+
+
+@login_required
 @app.route('/dashboard')
 def admin_dashboard():
     total_categories = Category.query.count()
@@ -151,17 +92,22 @@ def admin_dashboard():
     # Get the most recent menu items added (e.g., last 5 items)
     recent_items = MenuItem.query.order_by(desc(MenuItem.item_id)).limit(5).all()
 
+    logged_user = User.query.get(session['user_id'])
+
     return render_template('admin/dashboard.html', 
                            total_categories=total_categories, 
                            total_orders=total_orders,
                            total_menu_items=total_menu_items,
                            total_payments=total_payments,
-                           recent_items=recent_items) 
+                           recent_items=recent_items,
+                           logged_user = logged_user) 
 
 
 
+@login_required
 @app.route('/add/category', methods=['GET', 'POST'])
 def add_category():
+    logged_user = User.query.get(session['user_id'])
     if request.method == 'POST':
         name = request.form['name']
         image = request.files.get('image')
@@ -177,15 +123,16 @@ def add_category():
             db.session.add(new_category)
             db.session.commit()
             
-            flash('Category added successfully!', 'success')
+            flash('Category added successfully!', 'success', logged_user=logged_user)
             return redirect(url_for('add_category'))  # Redirect to the form page or another page
 
-    return render_template('admin/add_category.html')
+    return render_template('admin/add_category.html', logged_user=logged_user)
 
 
-
+@login_required
 @app.route('/add/item', methods=['GET', 'POST'])
 def add_menu_item():
+    logged_user = User.query.get(session['user_id'])
     if request.method == 'POST':
         name = request.form['name']
         description = request.form['description']
@@ -212,16 +159,18 @@ def add_menu_item():
             db.session.commit()
             
             flash('Menu item added successfully!', 'success')
-            return redirect(url_for('add_menu_item'))  # Redirect to the form page or another page
+            return redirect(url_for('add_menu_item', logged_user=logged_user))  # Redirect to the form page or another page
 
     # Fetch all categories for the dropdown
     categories = Category.query.all()
 
-    return render_template('admin/add_menu_item.html', categories=categories)
+    return render_template('admin/add_menu_item.html', categories=categories, logged_user=logged_user)
 
 
+@login_required
 @app.route('/remove/item/<int:item_id>', methods=['POST'])
 def remove_menu_item(item_id):
+    logged_user = User.query.get(session['user_id'])
     # Find the menu item by item_id
     item_to_remove = MenuItem.query.get(item_id) 
     if item_to_remove: 
@@ -231,16 +180,18 @@ def remove_menu_item(item_id):
     else:
         # Item not found, flash a failure message
         flash('Menu item not found!', 'danger') 
-    return redirect(url_for('view_menu_items')) 
+    return redirect(url_for('view_menu_items', logged_user=logged_user))  # Redirect to the menu view
 
 
+@login_required
 @app.route('/edit/item/<int:item_id>', methods=['GET', 'POST'])
 def edit_menu_item(item_id): 
+    logged_user = User.query.get(session['user_id'])
     categories = Category.query.all()
     item = MenuItem.query.get(item_id) 
     if item is None:
         flash('Menu item not found!', 'danger')
-        return redirect(url_for('view_menu_items'))  # Redirect to the menu view if the item doesn't exist
+        return redirect(url_for('view_menu_items', logged_user=logged_user))  # Redirect to the menu view if the item doesn't exist
     
     if request.method == 'POST':
         # Update the item with the new values from the form
@@ -251,14 +202,16 @@ def edit_menu_item(item_id):
         db.session.commit()
 
         flash('Menu item updated successfully!', 'success')
-        return redirect(url_for('view_menu_items'))   
-    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
+        return redirect(url_for('view_menu_items', logged_user=logged_user))  # Redirect to the menu view
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories, logged_user=logged_user)  # Redirect to the menu view
 
 
+@login_required
 @app.route('/view/items', methods=['GET', 'POST'])
 def view_menu_items():
+    logged_user = User.query.get(session['user_id'])
     menu_items = MenuItem.query.order_by(MenuItem.item_id).limit(20).all()
-    return render_template("admin/menu_items.html", menu_items=menu_items)
+    return render_template("admin/menu_items.html", menu_items=menu_items, logged_user=logged_user)
 
 @app.route('/categories', methods=['GET'])
 def side_categories():
@@ -266,10 +219,12 @@ def side_categories():
     return render_template("categories.html",categories=categories)
 
 
+@login_required
 @app.route('/view/categories', methods=['GET', 'POST'])
 def view_categories():
+    logged_user = User.query.get(session['user_id'])
     categories = Category.query.order_by(Category.category_id).limit(20).all()
-    return render_template("admin/categories.html", categories=categories)
+    return render_template("admin/categories.html", categories=categories, logged_user=logged_user)
 
 
 #add to cart
@@ -391,9 +346,62 @@ def order_success():
 
 
 
+#login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and user.check_password(password):
+            session['user_id'] = user.user_id
+            session['user_role'] = user.role
+            flash(f'Welcome back, {user.name}!', 'success')
+            return redirect(url_for('admin_dashboard'))  # or role-based redirect
+        else:
+            flash('Invalid email or password', 'danger')
+
+    return render_template('login.html')
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form.get('role', 'waiter')  # defaults to waiter if not provided
 
+        # Check if email is already registered
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email already registered. Please log in.', 'warning')
+            return redirect(url_for('login'))
+
+        # Create and save new user
+        new_user = User(name=name, email=email, role=role)
+        new_user.set_password(password)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        session['user_id'] = new_user.user_id
+        session['user_role'] = new_user.role
+        flash(f'Welcome back, {new_user.name}!', 'success')
+        return redirect(url_for('admin_dashboard'))  # or role-based redirect
+
+    return render_template('register.html')
+
+
+@login_required
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('user_role', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('index'))
 
 
 # Checkout

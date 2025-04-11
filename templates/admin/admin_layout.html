@@ -51,11 +51,19 @@
                 <img src="https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg" alt="User Profile"
                     class="w-10 h-10 rounded-full mr-3" />
                 <div>
-                    <h3 class="font-medium text-gray-800">John Doe</h3>
-                    <p class="text-sm text-gray-500">Profile</p>
+                    <h3 class="font-medium text-gray-800">{{ logged_user.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ logged_user.email }}</p>
                 </div>
             </div>
         </div>
+
+        <!-- logout -->
+        <a href="{{ url_for('logout') }}"
+            class="flex space-x-2 items-center p-2 mt-10 rounded-lg text-gray-700 hover:bg-gray-100">
+            <i class="fas fa-sign-out-alt mr-3"></i>
+            <span>Logout</span>
+        </a>
+
     </aside>
 
     <!-- Main Content -->
@@ -76,13 +84,7 @@
                 <button class="text-gray-600 hover:text-gray-800">
                     <i class="fas fa-bell text-xl"></i>
                 </button>
-                <div class="relative">
-                    <button class="text-gray-600 hover:text-gray-800">
-                        <i class="fas fa-shopping-cart text-xl"></i>
-                    </button>
-                    <span
-                        class="absolute top-[-8px] right-[-8px] bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium">3</span>
-                </div>
+
             </div>
         </nav>
 

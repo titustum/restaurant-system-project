@@ -1,0 +1,49 @@
+{% macro flash_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages w-full max-w-md mx-auto mt-4">
+    {% for category, message in messages %}
+    {% if category == 'error' %}
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded shadow-sm relative" role="alert">
+        <p class="font-medium">Error</p>
+        <p class="text-sm">{{ message }}</p>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900"
+            onclick="this.parentElement.remove()">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+    {% elif category == 'warning' %}
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded shadow-sm relative"
+        role="alert">
+        <p class="font-medium">Warning</p>
+        <p class="text-sm">{{ message }}</p>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-yellow-700 hover:text-yellow-900"
+            onclick="this.parentElement.remove()">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+    {% elif category == 'success' %}
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded shadow-sm relative"
+        role="alert">
+        <p class="font-medium">Success</p>
+        <p class="text-sm">{{ message }}</p>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-green-700 hover:text-green-900"
+            onclick="this.parentElement.remove()">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+    {% else %}
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded shadow-sm relative" role="alert">
+        <p class="font-medium">Info</p>
+        <p class="text-sm">{{ message }}</p>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-blue-700 hover:text-blue-900"
+            onclick="this.parentElement.remove()">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{% endmacro %}
