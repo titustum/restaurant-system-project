@@ -49,8 +49,8 @@ class MenuItem(db.Model):
 # Orders Model
 class Order(db.Model):
     order_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    table_number = db.Column(db.Integer, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)
+    table_number = db.Column(db.String(20), nullable=False)
     order_status = db.Column(db.String(20), default='Pending')
     total_price = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -67,16 +67,9 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
 
+    # Relationship to MenuItem
+    menu_item = db.relationship('MenuItem', backref='order_items', lazy=True)
+
     def __repr__(self):
         return f"<OrderItem {self.name}>"
-
-# Payment Model
-class Payment(db.Model):
-    payment_id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    payment_method = db.Column(db.String(20), nullable=False)
-    payment_status = db.Column(db.String(20), default='Pending')
-    
-    def __repr__(self):
-        return f"<Payment {self.name}>"
+ 

@@ -1,0 +1,43 @@
+{% extends "guest_layout.html" %}
+
+{% block guest_content %}
+<!-- Order Confirmation Section -->
+<div class="bg-white p-6 rounded-lg shadow-md mt-6 border border-gray-300">
+    <h2 class="text-2xl font-semibold text-green-600 mb-4">Order Confirmation</h2>
+
+    <div class="mb-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Thank you for your order, {{ order.customer_name }}!</h3>
+        <p class="text-gray-700">Your order has been placed successfully and is being processed.</p>
+    </div>
+
+    <div class="mb-4">
+        <h4 class="text-lg font-semibold text-gray-800">Order Details:</h4>
+        <p><strong>Table Number:</strong> {{ order.table_number }}</p>
+        <p><strong>Order ID:</strong> #{{ order.order_id }}</p>
+        <p><strong>Status:</strong> {{ order.order_status }}</p>
+        <p><strong>Total Price:</strong> ${{ '%.2f'|format(order.total_price) }}</p>
+    </div>
+
+    <div class="mt-4">
+        <h4 class="text-lg font-semibold text-gray-800 mb-2">Items Ordered:</h4>
+        <ul class="space-y-4">
+            {% for item in order_items %}
+            <li class="flex justify-between border-b py-2">
+                <!-- Displaying the Menu Item image -->
+                <div class="flex space-x-4">
+                    <img src="{{ url_for('static', filename='uploads/items/' ~ item.menu_item.image_url) }}"
+                        alt="{{ item.menu_item.name }}" class="w-16 h-16 object-cover rounded-md">
+                    <span>{{ item.menu_item.name }} (x{{ item.quantity }})</span>
+                </div>
+                <span>${{ '%.2f'|format(item.price * item.quantity) }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{{ url_for('index') }}"
+            class="inline-block px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
