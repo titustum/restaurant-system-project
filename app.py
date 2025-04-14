@@ -70,7 +70,6 @@ def allowed_file(filename):
 
 # admin routes
 
-@wraps
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -82,8 +81,8 @@ def login_required(f):
 
 
 
-@login_required
 @app.route('/dashboard')
+@login_required
 def admin_dashboard():
     total_categories = Category.query.count()
     total_orders = Order.query.count()
@@ -132,8 +131,9 @@ def admin_dashboard():
 
 
 
-@login_required
+
 @app.route('/add/category', methods=['GET', 'POST'])
+@login_required
 def add_category():
     logged_user = User.query.get(session['user_id'])
     if request.method == 'POST':
@@ -157,8 +157,9 @@ def add_category():
     return render_template('admin/add_category.html', logged_user=logged_user)
 
 
-@login_required
+
 @app.route('/add/item', methods=['GET', 'POST'])
+@login_required
 def add_menu_item():
     logged_user = User.query.get(session['user_id'])
     if request.method == 'POST':
@@ -195,8 +196,9 @@ def add_menu_item():
     return render_template('admin/add_menu_item.html', categories=categories, logged_user=logged_user)
 
 
-@login_required
+
 @app.route('/remove/item/<int:item_id>', methods=['POST'])
+@login_required
 def remove_menu_item(item_id):
     logged_user = User.query.get(session['user_id'])
     # Find the menu item by item_id
@@ -211,8 +213,8 @@ def remove_menu_item(item_id):
     return redirect(url_for('view_menu_items', logged_user=logged_user))  # Redirect to the menu view
 
 
-@login_required
 @app.route('/edit/item/<int:item_id>', methods=['GET', 'POST'])
+@login_required
 def edit_menu_item(item_id): 
     logged_user = User.query.get(session['user_id'])
     categories = Category.query.all()
@@ -234,8 +236,8 @@ def edit_menu_item(item_id):
     return render_template('admin/edit_menu_item.html', item=item, categories=categories, logged_user=logged_user)  # Redirect to the menu view
 
 
-@login_required
 @app.route('/view/items', methods=['GET', 'POST'])
+@login_required
 def view_menu_items():
     logged_user = User.query.get(session['user_id'])
     menu_items = MenuItem.query.order_by(MenuItem.item_id).limit(20).all()
@@ -247,8 +249,8 @@ def side_categories():
     return render_template("categories.html",categories=categories)
 
 
-@login_required
 @app.route('/view/categories', methods=['GET', 'POST'])
+@login_required
 def view_categories():
     logged_user = User.query.get(session['user_id'])
     categories = Category.query.order_by(Category.category_id).limit(20).all()
@@ -406,16 +408,18 @@ def register():
     return render_template('register.html')
 
 
-@login_required
+
 @app.route('/logout')
+@login_required
 def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
 
-@login_required
+
 @app.route('/orders')
+@login_required
 def orders(): 
     logged_user = User.query.get(session['user_id'])
     orders = Order.query.all()
@@ -423,8 +427,8 @@ def orders():
 
 
 
-@login_required
 @app.route('/edit_order/<int:order_id>', methods=['GET', 'POST'])
+@login_required
 def edit_order(order_id):
     order = Order.query.get_or_404(order_id)
     logged_user = User.query.get(session['user_id'])
